@@ -1,0 +1,118 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <title>LangChain Chatbot</title>
+  <style>
+    body {
+      font-family: Arial, sans-serif;
+      margin: 2rem auto;
+      max-width: 700px;
+      background: #f5f6fa;
+    }
+    h1 {
+      text-align: center;
+      color: #2f3640;
+    }
+    #chat-box {
+      border: 1px solid #dcdde1;
+      border-radius: 8px;
+      padding: 1rem;
+      height: 60vh;
+      overflow-y: auto;
+      background: white;
+    }
+    .msg {
+      margin: 8px 0;
+      padding: 6px 10px;
+      border-radius: 6px;
+    }
+    .user {
+      text-align: right;
+      background: #dff9fb;
+    }
+    .bot {
+      text-align: left;
+      background: #f1f2f6;
+    }
+    #input-area {
+      display: flex;
+      margin-top: 10px;
+      gap: 10px;
+    }
+    #user-input {
+      flex: 1;
+      padding: 8px;
+      border-radius: 6px;
+      border: 1px solid #ccc;
+    }
+    #send-btn {
+      padding: 8px 20px;
+      border: none;
+      border-radius: 6px;
+      background: #00a8ff;
+      color: white;
+      cursor: pointer;
+    }
+    #send-btn:hover {
+      background: #0097e6;
+    }
+  </style>
+</head>
+<body>
+  <h1>💬 LangChain Chatbot</h1>
+
+  <div id="chat-box"></div>
+
+  <div id="input-area">
+    <input type="text" id="user-input" placeholder="Type your message..." />
+    <button id="send-btn">Send</button>
+  </div>
+
+  <script>
+    const chatBox = document.getElementById("chat-box");
+    const input = document.getElementById("user-input");
+    const sendBtn = document.getElementById("send-btn");
+
+    function addMessage(text, sender) {
+      const msg = document.createElement("div");
+      msg.className = `msg ${sender}`;
+      msg.textContent = text;
+      chatBox.appendChild(msg);
+      chatBox.scrollTop = chatBox.scrollHeight;
+    }
+
+    async function sendMessage() {
+      const text = input.value.trim();
+      if (!text) return;
+
+      addMessage(text, "user");
+      input.value = "";
+      addMessage("Thinking...", "bot");
+
+      try {
+        const res = await fetch("/chat", {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({ user_input: text, session_id: "default" }),
+        });
+
+        const data = await res.json();
+        document.querySelectorAll(".bot").forEach((e) => {
+          if (e.textContent === "Thinking...") e.remove();
+        });
+
+        addMessage(data.reply, "bot");
+      } catch (err) {
+        console.error(err);
+        addMessage("Error: " + err.message, "bot");
+      }
+    }
+
+    sendBtn.addEventListener("click", sendMessage);
+    input.addEventListener("keypress", (e) => {
+      if (e.key === "Enter") sendMessage();
+    });
+  </script>
+</body>
+</html>
