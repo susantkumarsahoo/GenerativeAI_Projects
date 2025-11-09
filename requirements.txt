@@ -5,3 +5,5 @@ uvicorn
 python-dotenv
 streamlit
 requests
+langchain-community
+langchain_classic
